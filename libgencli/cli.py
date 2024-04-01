@@ -35,6 +35,8 @@ def search_books(inside: str = "title") -> None:
     ).ask()
     opts = {"column": inside}
 
+    clear_screen()
+
     try:
         results = asyncio.run(fetch_book_data(query, opts))
 
