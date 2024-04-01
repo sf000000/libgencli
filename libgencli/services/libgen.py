@@ -14,10 +14,16 @@ class SearchOptions(TypedDict, total=True):
 class Client:
     def __init__(self):
         self.session: Optional[ClientSession] = None
+        self.headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                "(KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+            )
+        }
 
     async def __aenter__(self) -> "Client":
         if self.session is None or self.session.closed:
-            self.session = aiohttp.ClientSession()
+            self.session = aiohttp.ClientSession(headers=self.headers)
         return self
 
     async def __aexit__(
@@ -28,7 +34,7 @@ class Client:
 
     async def search(self, query: str, opts: SearchOptions) -> str:
         if not self.session or self.session.closed:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(headers=self.headers) as session:
                 async with session.get(
                     "http://libgen.rs/search.php", params={"req": query, **opts}
                 ) as resp:
@@ -43,7 +49,7 @@ class Client:
         for mirror in mirrors:
             try:
                 if not self.session or self.session.closed:
-                    async with aiohttp.ClientSession() as session:
+                    async with aiohttp.ClientSession(headers=self.headers) as session:
                         async with session.get(mirror) as resp:
                             download_link = extract_download_link(await resp.text())
                             async with session.get(download_link) as resp:
@@ -56,7 +62,7 @@ class Client:
                                 ) as progress:
                                     with open(save_path, "wb") as f:
                                         async for chunk in resp.content.iter_chunked(
-                                            1024
+                                            5 * 1024 * 1024
                                         ):
                                             f.write(chunk)
                                             progress.update(len(chunk))
