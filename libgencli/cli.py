@@ -90,7 +90,7 @@ def search_books(inside: str = "title") -> None:
         ).ask()
         download_path = os.path.expanduser(download_path)
 
-        file_name = f"{sanitize_filename(book['title'])}_{sanitize_filename(book['author'])}.pdf"
+        file_name = f"{sanitize_filename(book['title'])}_{sanitize_filename(book['author'])}.{book['extension']}"
         full_path = os.path.join(download_path, file_name)
 
         asyncio.run(download_book(list(book["mirrors"]), full_path))
